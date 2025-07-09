@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import api from "../../services/api";
-import { FaPlane, FaUsers, FaTicketAlt, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlane, FaUsers, FaTicketAlt, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 interface AdminStats {
   totalBookings: number;
@@ -62,6 +62,107 @@ interface User {
 
 type TabType = 'dashboard' | 'flights' | 'bookings' | 'users';
 
+// Pagination Component
+const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage }: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems?: number;
+  itemsPerPage?: number;
+}) => {
+  const getVisiblePages = () => {
+    const delta = 2; // Number of pages to show on each side of current page
+    const range = [];
+    const rangeWithDots = [];
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
+
+  const visiblePages = getVisiblePages();
+
+  const startItem = totalItems ? (currentPage - 1) * (itemsPerPage || 10) + 1 : 0;
+  const endItem = totalItems ? Math.min(currentPage * (itemsPerPage || 10), totalItems) : 0;
+
+  return (
+    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+      {/* Page Info */}
+      {totalItems && (
+        <div className="text-sm text-gray-600">
+          Showing {startItem} to {endItem} of {totalItems} results
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      <div className="flex items-center gap-1">
+        {/* Previous Button */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors text-sm ${currentPage === 1
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+        >
+          <FaChevronLeft className="w-3 h-3" />
+          <span className="hidden sm:inline">Previous</span>
+        </button>
+
+        {/* Page Numbers */}
+        <div className="flex items-center gap-1">
+          {visiblePages.map((page, index) => (
+            <React.Fragment key={index}>
+              {page === '...' ? (
+                <span className="px-2 py-2 text-gray-500 text-sm">...</span>
+              ) : (
+                <button
+                  onClick={() => onPageChange(page as number)}
+                  className={`px-3 py-2 rounded-lg transition-colors text-sm min-w-[40px] ${currentPage === page
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {page}
+                </button>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Next Button */}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors text-sm ${currentPage === totalPages
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+        >
+          <span className="hidden sm:inline">Next</span>
+          <FaChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -91,6 +192,7 @@ export default function AdminDashboard() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   const loadStats = useCallback(async () => {
@@ -107,6 +209,7 @@ export default function AdminDashboard() {
       if (response.status === 200) {
         setFlights(response.data.flights || []);
         setTotalPages(response.data.pagination?.pages || 1);
+        setTotalItems(response.data.pagination?.total || 0);
         console.log('Flights loaded:', {
           flights: response.data.flights?.length,
           pagination: response.data.pagination
@@ -118,6 +221,7 @@ export default function AdminDashboard() {
       setError(errorMessage);
       setFlights([]);
       setTotalPages(1);
+      setTotalItems(0);
     }
   }, [currentPage, searchTerm]);
 
@@ -126,6 +230,7 @@ export default function AdminDashboard() {
     if (response.status === 200) {
       setBookings(response.data.bookings);
       setTotalPages(response.data.pagination.pages);
+      setTotalItems(response.data.pagination.total || 0);
     }
   }, [currentPage]);
 
@@ -134,6 +239,7 @@ export default function AdminDashboard() {
     if (response.status === 200) {
       setUsers(response.data.users);
       setTotalPages(response.data.pagination.pages);
+      setTotalItems(response.data.pagination.total || 0);
     }
   }, [currentPage, searchTerm]);
 
@@ -483,23 +589,7 @@ export default function AdminDashboard() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <div className="flex gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 rounded-lg transition-colors ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} totalItems={totalItems} itemsPerPage={10} />
                 )}
               </div>
             )}
@@ -566,23 +656,7 @@ export default function AdminDashboard() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <div className="flex gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 rounded-lg transition-colors ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} totalItems={totalItems} itemsPerPage={10} />
                 )}
               </div>
             )}
@@ -643,23 +717,7 @@ export default function AdminDashboard() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <div className="flex gap-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 rounded-lg transition-colors ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} totalItems={totalItems} itemsPerPage={10} />
                 )}
               </div>
             )}

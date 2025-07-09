@@ -59,7 +59,7 @@ export default function SearchPage() {
   const handleBookingConfirm = async (passengers: Passenger[]) => {
     if (!user || !bookingFlight) {
       setBookingError("You must be signed in to book a flight.");
-      return;
+      throw new Error("You must be signed in to book a flight.");
     }
 
     try {
@@ -74,13 +74,20 @@ export default function SearchPage() {
       const result = await createBooking(bookingData);
 
       if (result.success) {
-        setBookingSuccess("Booking confirmed! E-ticket generated.");
+        // Close modal immediately on successful booking
         setBookingFlight(null);
+        setBookingError(""); // Clear any previous errors
+        // Show success message outside the modal
+        setBookingSuccess("Booking confirmed! E-ticket generated.");
+        window.location.reload();
       } else {
         setBookingError(result.error || "Failed to create booking. Please try again.");
+        throw new Error(result.error || "Failed to create booking");
       }
-    } catch {
-      setBookingError("An error occurred while creating the booking.");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred while creating the booking.";
+      setBookingError(errorMessage);
+      throw error; // Re-throw to prevent modal from closing
     }
   };
 

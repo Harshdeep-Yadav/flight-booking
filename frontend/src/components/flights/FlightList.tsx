@@ -1,8 +1,10 @@
 "use client";
-import React, { useState, } from "react";
+import React, { useState, useMemo } from "react";
 import { FaPlane, FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
 import { Flight } from "../../types/flight";
 import { BookingModal } from "../bookings/BookingModal";
+import { useBookings } from "../../hooks/useBookings";
+import { Passenger } from "../../hooks/useBookings";
 
 interface FlightListProps {
   flights: Flight[];
@@ -16,6 +18,10 @@ export default function FlightList({ flights, loading, error, onFlightSelect }: 
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [sortBy, setSortBy] = useState<'price' | 'departure_time' | 'airline'>('departure_time');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [bookingError, setBookingError] = useState<string>("");
+  const [bookingSuccess, setBookingSuccess] = useState<string>("");
+
+  const { createBooking } = useBookings();
 
   const handleFlightClick = (flight: Flight) => {
     setSelectedFlight(flight);
@@ -85,6 +91,40 @@ export default function FlightList({ flights, loading, error, onFlightSelect }: 
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${diffHours}h ${diffMinutes}m`;
+  };
+
+  const handleBookingConfirm = async (passengers: Passenger[]) => {
+    if (!selectedFlight) return;
+
+    console.log('handleBookingConfirm called with passengers:', passengers);
+    setBookingError(""); // Clear previous errors
+    setBookingSuccess(""); // Clear previous success messages
+
+    const bookingData = {
+      flight_id: selectedFlight.id,
+      passenger_info: passengers,
+      passenger_count: passengers.length,
+      total_price: selectedFlight.price * passengers.length,
+      trip_type: 'one-way'
+    };
+
+    console.log('Creating booking with data:', bookingData);
+    const result = await createBooking(bookingData);
+    console.log('Booking result:', result);
+
+    if (result.success) {
+      console.log('Booking successful, closing modal...');
+      // Close modal immediately on successful booking
+      setShowBookingModal(false);
+      setSelectedFlight(null);
+      // Show success message outside the modal (optional)
+      setBookingSuccess("Booking confirmed! E-ticket generated.");
+    } else {
+      console.log('Booking failed:', result.error);
+      setBookingError(result.error || "Failed to create booking. Please try again.");
+      // Throw error to prevent modal from closing
+      throw new Error(result.error || "Failed to create booking");
+    }
   };
 
   if (loading) {
@@ -246,14 +286,10 @@ export default function FlightList({ flights, loading, error, onFlightSelect }: 
             setShowBookingModal(false);
             setSelectedFlight(null);
           }}
-          onConfirm={(passengers) => {
-            // Handle booking confirmation
-            console.log('Booking confirmed:', passengers);
-            setShowBookingModal(false);
-            setSelectedFlight(null);
-          }}
+          onConfirm={handleBookingConfirm}
           totalPassengers={1}
           passengerTypes={['Adult']}
+          error={bookingError}
         />
       )}
     </div>

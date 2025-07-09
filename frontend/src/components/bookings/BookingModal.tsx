@@ -7,7 +7,7 @@ import { Passenger } from "../../hooks/useBookings";
 interface BookingModalProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (passengers: Passenger[]) => void;
+  onConfirm: (passengers: Passenger[]) => Promise<void>;
   totalPassengers: number;
   passengerTypes: string[];
   error?: string;
@@ -31,6 +31,7 @@ export function BookingModal({
 }: BookingModalProps) {
   const [currentPassengerIndex, setCurrentPassengerIndex] = useState(0);
   const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -41,7 +42,7 @@ export function BookingModal({
 
   if (!open) return null;
 
-  const onSubmit = (data: PassengerFormData) => {
+  const onSubmit = async (data: PassengerFormData) => {
     const passenger: Passenger = {
       type: passengerTypes[currentPassengerIndex].toLowerCase() as "adult" | "child" | "infant",
       first_name: data.first_name,
@@ -57,10 +58,20 @@ export function BookingModal({
       setCurrentPassengerIndex(currentPassengerIndex + 1);
       reset();
     } else {
-      onConfirm(newPassengers);
-      setPassengers([]);
-      setCurrentPassengerIndex(0);
-      reset();
+      setIsSubmitting(true);
+      try {
+        await onConfirm(newPassengers);
+        onClose();
+        // Only reset if the booking was successful
+        setPassengers([]);
+        setCurrentPassengerIndex(0);
+        reset();
+      } catch (error) {
+        console.error('Booking failed:', error);
+        // Don't reset the form if booking failed
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -204,15 +215,20 @@ export function BookingModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                disabled={isSubmitting}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {currentPassengerIndex < totalPassengers - 1 ? "Next" : "Confirm Booking"}
+                {isSubmitting && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                {currentPassengerIndex < totalPassengers - 1 ? "Next" : (isSubmitting ? "Processing..." : "Confirm Booking")}
               </button>
             </div>
           </form>

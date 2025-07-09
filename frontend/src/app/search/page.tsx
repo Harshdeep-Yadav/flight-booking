@@ -114,8 +114,9 @@ export default function SearchPage() {
         <div className="max-w-6xl mx-auto px-4">
           <FlightList
             flights={flights}
-            onBook={handleBook}
             loading={loading}
+            error={error}
+            onFlightSelect={handleBook}
           />
         </div>
 

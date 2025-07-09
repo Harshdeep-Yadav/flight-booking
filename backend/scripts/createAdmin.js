@@ -2,8 +2,8 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const supabase = createClient(
-  "https://kxyxzplqifovtvvzjvcu.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4eXh6cGxxaWZvdnR2dnpqdmN1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjA2NjM3MywiZXhwIjoyMDY3NjQyMzczfQ.rDoR1CgaJcZrWTTfJ5oJj_YGBF8N-JVwIo4WYMJQ-sI"
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 async function createAdminUser() {

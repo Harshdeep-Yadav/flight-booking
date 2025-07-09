@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=https://khynwzlcxqeafiiychqc.supabase.co
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlanh5eGFhY3JuaXNkZm50cGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMTMxOTYsImV4cCI6MjA2NTg4OTE5Nn0.vJkDtpc4OlZTNYDfK6HutDAaAvpOMTHyGo0Moa0ifFo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NEXT_PUBLIC_SUPABASE_URL=https://khynwzlcxqeafiiychqc.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlanh5eGFhY3JuaXNkZm50cGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMTMxOTYsImV4cCI6MjA2NTg4OTE5Nn0.vJkDtpc4OlZTNYDfK6HutDAaAvpOMTHyGo0Moa0ifFo
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

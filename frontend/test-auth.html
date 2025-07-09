@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .loading { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Authentication Integration Test</h1>
+        <p>This page tests the authentication integration between frontend and backend.</p>
+
+        <div class="test-section info">
+            <h3>Test Configuration</h3>
+            <p><strong>API Base URL:</strong> <span id="apiUrl">Loading...</span></p>
+            <p><strong>Status:</strong> <span id="status">Ready to test</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>1. User Registration Test</h3>
+            <button onclick="testRegistration()">Test Registration</button>
+            <div id="registrationResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. User Login Test</h3>
+            <button onclick="testLogin()">Test Login</button>
+            <div id="loginResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Profile Access Test</h3>
+            <button onclick="testProfile()">Test Profile Access</button>
+            <div id="profileResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Profile Update Test</h3>
+            <button onclick="testProfileUpdate()">Test Profile Update</button>
+            <div id="updateResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Token Validation Test</h3>
+            <button onclick="testTokenValidation()">Test Token Validation</button>
+            <div id="tokenResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Run All Tests</h3>
+            <button onclick="runAllTests()">Run Complete Test Suite</button>
+            <div id="allTestsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000';
+        let authToken = null;
+        let testUser = {
+            email: `test${Date.now()}@example.com`,
+            password: 'testpassword123',
+            full_name: 'Test User'
+        };
+
+        // Initialize
+        document.getElementById('apiUrl').textContent = API_BASE;
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+
+        function showLoading(elementId) {
+            showResult(elementId, 'Testing...', 'loading');
+        }
+
+        async function testRegistration() {
+            showLoading('registrationResult');
+            try {
+                const response = await axios.post(`${API_BASE}/users/register`, testUser);
+                showResult('registrationResult', 
+                    `✅ Registration Successful!\n\nResponse:\n${JSON.stringify(response.data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('registrationResult', 
+                    `❌ Registration Failed!\n\nError: ${error.response?.data?.error || error.message}\nStatus: ${error.response?.status}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testLogin() {
+            showLoading('loginResult');
+            try {
+                const response = await axios.post(`${API_BASE}/users/login`, {
+                    email: testUser.email,
+                    password: testUser.password
+                });
+                authToken = response.data.session.access_token;
+                showResult('loginResult', 
+                    `✅ Login Successful!\n\nToken: ${authToken ? '✅ Present' : '❌ Missing'}\nUser: ${response.data.user.full_name}\nRole: ${response.data.user.role}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('loginResult', 
+                    `❌ Login Failed!\n\nError: ${error.response?.data?.error || error.message}\nStatus: ${error.response?.status}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testProfile() {
+            showLoading('profileResult');
+            if (!authToken) {
+                showResult('profileResult', '❌ No auth token available. Please login first.', 'error');
+                return;
+            }
+            try {
+                const response = await axios.get(`${API_BASE}/users/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                showResult('profileResult', 
+                    `✅ Profile Access Successful!\n\nProfile:\n${JSON.stringify(response.data.user, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('profileResult', 
+                    `❌ Profile Access Failed!\n\nError: ${error.response?.data?.error || error.message}\nStatus: ${error.response?.status}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testProfileUpdate() {
+            showLoading('updateResult');
+            if (!authToken) {
+                showResult('updateResult', '❌ No auth token available. Please login first.', 'error');
+                return;
+            }
+            try {
+                const updateData = {
+                    full_name: 'Updated Test User',
+                    phone: '+1234567890'
+                };
+                const response = await axios.put(`${API_BASE}/users/profile`, updateData, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                showResult('updateResult', 
+                    `✅ Profile Update Successful!\n\nUpdated Profile:\n${JSON.stringify(response.data.user, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('updateResult', 
+                    `❌ Profile Update Failed!\n\nError: ${error.response?.data?.error || error.message}\nStatus: ${error.response?.status}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testTokenValidation() {
+            showLoading('tokenResult');
+            try {
+                // Test with invalid token
+                const invalidResponse = await axios.get(`${API_BASE}/users/profile`, {
+                    headers: {
+                        'Authorization': 'Bearer invalid_token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                showResult('tokenResult', '❌ Invalid token should have been rejected!', 'error');
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    showResult('tokenResult', '✅ Invalid token correctly rejected (401 Unauthorized)', 'success');
+                } else {
+                    showResult('tokenResult', 
+                        `❌ Unexpected error with invalid token: ${error.response?.status}`, 
+                        'error'
+                    );
+                }
+            }
+        }
+
+        async function runAllTests() {
+            showLoading('allTestsResult');
+            const results = [];
+            
+            try {
+                // Test 1: Registration
+                results.push('1. Registration: Testing...');
+                const regResponse = await axios.post(`${API_BASE}/users/register`, testUser);
+                results.push('   ✅ Registration successful');
+                
+                // Test 2: Login
+                results.push('2. Login: Testing...');
+                const loginResponse = await axios.post(`${API_BASE}/users/login`, {
+                    email: testUser.email,
+                    password: testUser.password
+                });
+                authToken = loginResponse.data.session.access_token;
+                results.push('   ✅ Login successful');
+                
+                // Test 3: Profile Access
+                results.push('3. Profile Access: Testing...');
+                const profileResponse = await axios.get(`${API_BASE}/users/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                results.push('   ✅ Profile access successful');
+                
+                // Test 4: Profile Update
+                results.push('4. Profile Update: Testing...');
+                const updateResponse = await axios.put(`${API_BASE}/users/profile`, {
+                    full_name: 'Updated Test User',
+                    phone: '+1234567890'
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                results.push('   ✅ Profile update successful');
+                
+                // Test 5: Invalid Token
+                results.push('5. Invalid Token: Testing...');
+                try {
+                    await axios.get(`${API_BASE}/users/profile`, {
+                        headers: {
+                            'Authorization': 'Bearer invalid_token',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    results.push('   ❌ Invalid token should have been rejected');
+                } catch (error) {
+                    if (error.response?.status === 401) {
+                        results.push('   ✅ Invalid token correctly rejected');
+                    } else {
+                        results.push(`   ❌ Unexpected error: ${error.response?.status}`);
+                    }
+                }
+                
+                results.push('\n🎉 All tests completed successfully!');
+                showResult('allTestsResult', results.join('\n'), 'success');
+                
+            } catch (error) {
+                results.push(`❌ Test suite failed: ${error.response?.data?.error || error.message}`);
+                showResult('allTestsResult', results.join('\n'), 'error');
+            }
+        }
+    </script>
+</body>
+</html> 

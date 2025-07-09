@@ -5,7 +5,7 @@ import { useAuth } from "../AuthProvider";
 import ProtectedRoute from "../../components/auth/ProtectedRoute";
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://flight-booking-zeez.onrender.com";
 
 export default function AdminPage() {
   const { user } = useAuth();

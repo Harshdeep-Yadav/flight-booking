@@ -36,7 +36,7 @@ A modern, responsive React/Next.js frontend for the Flight Booking application w
    Create a `.env.local` file in the frontend directory:
    ```env
    # API Configuration
-   NEXT_PUBLIC_API_URL=http://localhost:4000
+   NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
    
    # Supabase Configuration (if using client-side Supabase)
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -295,7 +295,7 @@ docker run -p 3000:3000 flight-booking-frontend
 ### Environment Variables
 ```env
 # Development
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
 
 # Production
 NEXT_PUBLIC_API_URL=https://your-backend-domain.com

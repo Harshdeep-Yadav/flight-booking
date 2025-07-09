@@ -270,7 +270,7 @@ node test-auth.js
 
 **Frontend (.env.local):**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
 ```
 
 **Backend (.env):**

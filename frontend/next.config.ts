@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     // serverComponentsExternalPackages: ['@supabase/supabase-js']
   },
   env: {
-    NEXT_PUBLIC_API_URL: 'http://localhost:4000',
+    NEXT_PUBLIC_API_URL: 'https://flight-booking-zeez.onrender.com',
   },
 
 };

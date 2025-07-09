@@ -153,8 +153,8 @@ export function useFlightStatusSSE(flightId?: string) {
   const [isLoading, setIsLoading] = useState(false);
 
   const sseUrl = flightId 
-    ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/sse/flight-status/${flightId}`
-    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/sse/flight-status`;
+    ? `${process.env.NEXT_PUBLIC_API_URL || 'https://flight-booking-zeez.onrender.com'}/sse/flight-status/${flightId}`
+    : `${process.env.NEXT_PUBLIC_API_URL || 'https://flight-booking-zeez.onrender.com'}/sse/flight-status`;
 
   const { isConnected, error, reconnect } = useSSE(sseUrl, {
     onFlightUpdate: (flight) => {
@@ -175,7 +175,7 @@ export function useFlightStatusSSE(flightId?: string) {
   useEffect(() => {
     if (flightId) {
       setIsLoading(true);
-      axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/sse/flight-status/${flightId}`)
+      axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'https://flight-booking-zeez.onrender.com'}/sse/flight-status/${flightId}`)
         .then(res => res.data)
         .then(data => {
           setFlightStatus(data);
@@ -201,7 +201,7 @@ export function useFlightStatusSSE(flightId?: string) {
 export function useBookingUpdatesSSE() {
   const [bookingUpdates, setBookingUpdates] = useState<BookingUpdate[]>([]);
 
-  const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/sse/booking-updates`;
+  const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || 'https://flight-booking-zeez.onrender.com'}/sse/booking-updates`;
 
   const { isConnected, error, reconnect } = useSSE(sseUrl, {
     onBookingUpdate: (booking) => {

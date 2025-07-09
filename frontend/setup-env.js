@@ -25,7 +25,7 @@ function createEnvFile() {
 # Generated automatically by setup-env.js
 
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
 
 # Supabase Configuration (if using client-side Supabase)
 NEXT_PUBLIC_SUPABASE_URL=https://khynwzlcxqeafiiychqc.supabase.co
@@ -49,7 +49,7 @@ NEXT_PUBLIC_LOG_LEVEL=debug
     fs.writeFileSync(envPath, envContent);
     console.log('✅ .env.local created successfully!');
     console.log('\n📋 Environment variables configured:');
-    console.log('   • API URL: http://localhost:4000');
+    console.log('   • API URL: https://flight-booking-zeez.onrender.com');
     console.log('   • Supabase: Configured with project credentials');
     console.log('   • Offline Mode: Enabled');
     console.log('   • PWA Support: Enabled');

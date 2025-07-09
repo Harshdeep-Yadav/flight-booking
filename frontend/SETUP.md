@@ -47,7 +47,7 @@ Add the following variables to your `.env.local` file:
 
 ```env
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
 
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://khynwzlcxqeafiiychqc.supabase.co
@@ -71,7 +71,7 @@ NEXT_PUBLIC_LOG_LEVEL=debug
 
 ### API Configuration
 - `NEXT_PUBLIC_API_URL`: URL of your backend server
-  - **Development**: `http://localhost:4000`
+  - **Development**: `https://flight-booking-zeez.onrender.com`
   - **Production**: `https://your-backend-domain.com`
 
 ### Supabase Configuration
@@ -115,7 +115,7 @@ Open your browser and navigate to: `http://localhost:3000`
 
 ### Development Environment
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_URL=https://flight-booking-zeez.onrender.com
 NEXT_PUBLIC_DEBUG_MODE=true
 NEXT_PUBLIC_LOG_LEVEL=debug
 ```
@@ -212,7 +212,7 @@ IndexedDB is used for offline data persistence.
 
 ### 1. Check Backend Connection
 ```bash
-curl http://localhost:4000/health
+curl https://flight-booking-zeez.onrender.com/health
 ```
 
 ### 2. Test Frontend

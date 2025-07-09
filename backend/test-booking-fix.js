@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:4000';
+const API_BASE_URL = 'https://flight-booking-zeez.onrender.com';
 
 async function testBookingProcess() {
   console.log('🧪 Testing Booking Process...\n');

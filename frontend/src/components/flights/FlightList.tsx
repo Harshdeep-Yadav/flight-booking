@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { FaPlane, FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
 import { Flight } from "../../types/flight";
 import { BookingModal } from "../bookings/BookingModal";
@@ -22,7 +22,7 @@ export default function FlightList({ flights, loading, error, onFlightSelect }: 
   const [bookingSuccess, setBookingSuccess] = useState<string>("");
 
   const { createBooking } = useBookings();
-
+  console.log('FlightList component rendered with flights:', bookingSuccess);
   const handleFlightClick = (flight: Flight) => {
     setSelectedFlight(flight);
     setShowBookingModal(true);
